@@ -58,4 +58,7 @@ public class AgentSenses : MonoBehaviour
         // Multiplicar la dirección resultante por la distancia para obtener el punto final
         return direction * distance;
     }
+
+    // Fuentes de los recursos consultados para el proyecto
+    // https://youtu.be/lV47ED8h61k?si=6m012cxUMIkJvd5z
 }
