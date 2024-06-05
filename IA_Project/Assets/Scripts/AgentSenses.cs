@@ -21,6 +21,11 @@ public class AgentSenses : MonoBehaviour
             if (playerVector.magnitude < visionDistance)
             {
                 playerDetected = true;
+                Debug.Log("Estas en  mi vision!!, Te puedo ver Chabal!!!");
+            }
+            else 
+            {
+                Debug.Log("Onde andas??, Que no te veo!!");
             }
         }
     }
