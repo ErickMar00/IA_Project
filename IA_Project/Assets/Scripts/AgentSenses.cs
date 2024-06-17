@@ -1,36 +1,44 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AgentSenses : MonoBehaviour
 {
-    [SerializeField] private Transform playerTransform;
-    [SerializeField] private Transform agentTransform;
+    public Transform playerTransform;
+    public Transform agentTransform;
 
     [Range(0f, 360f)]
     [SerializeField] private float visionAngle = 30f;
     [SerializeField] private float visionDistance = 10f;
 
+    [Range(0f, 180f)] // Ampliar el rango para permitir ángulos mayores si es necesario
+    [SerializeField] private float additionalVisionAngle = 15f; // Variable para el aumento del ángulo de visión
+
     private bool playerDetected = false;
 
-    private void Update()
+    public bool IsPlayerDetected()
     {
-        playerDetected = false;
-
         // Vector del jugador relativo al agente
         Vector3 playerVector = playerTransform.position - agentTransform.position;
 
-        // Verifica si el jugador está dentro del ángulo y la distancia de visión del agente
+        // Verifica si el jugador está dentro del ángulo de visión del agente y dentro de la distancia de visión
         if (Vector3.Angle(playerVector.normalized, agentTransform.forward) < visionAngle * 0.5f)
         {
             if (playerVector.magnitude < visionDistance)
             {
                 playerDetected = true;
-                Debug.Log("Estas en  mi vision!!, Te puedo ver Chabal!!!");
             }
-            else 
+            else
             {
-                Debug.Log("Onde andas??, Que no te veo!!");
+                playerDetected = false;
             }
         }
+        else
+        {
+            playerDetected = false;
+        }
+
+        return playerDetected;
     }
 
     private void OnDrawGizmos()
@@ -39,7 +47,10 @@ public class AgentSenses : MonoBehaviour
 
         float halfVisionAngle = visionAngle * 0.5f;
 
-        // Calcula los puntos del cono de visión del agente
+        // Aumenta el ángulo de visión si el jugador está detectado
+        float currentVisionAngle = playerDetected ? visionAngle + additionalVisionAngle : visionAngle;
+
+        // Calcula los puntos del cono de visión del agente con el ángulo actual
         Vector3 point1 = PointForAngle(halfVisionAngle, visionDistance);
         Vector3 point2 = PointForAngle(-halfVisionAngle, visionDistance);
 
@@ -47,20 +58,27 @@ public class AgentSenses : MonoBehaviour
         Gizmos.color = playerDetected ? Color.green : Color.red;
 
         // Dibuja el cono de visión y la dirección hacia adelante del agente
-        Gizmos.DrawLine(agentTransform.position, agentTransform.position + point1);
-        Gizmos.DrawLine(agentTransform.position, agentTransform.position + point2);
-        Gizmos.DrawLine(agentTransform.position + point1, agentTransform.position + point2);
+        Gizmos.DrawLine(agentTransform.position, agentTransform.position + PointForAngle(halfVisionAngle, visionDistance));
+        Gizmos.DrawLine(agentTransform.position, agentTransform.position + PointForAngle(-halfVisionAngle, visionDistance));
+        Gizmos.DrawLine(agentTransform.position + PointForAngle(halfVisionAngle, visionDistance), agentTransform.position + PointForAngle(-halfVisionAngle, visionDistance));
+        Gizmos.DrawRay(agentTransform.position, agentTransform.forward * visionDistance);
 
-        Gizmos.DrawRay(agentTransform.position, agentTransform.forward * 5f);
-
+        // Dibuja el cono de visión ampliado si el jugador está detectado
+        if (playerDetected)
+        {
+            float halfCurrentVisionAngle = currentVisionAngle * 0.5f;
+            Gizmos.color = new Color(0f, 1f, 0f, 0.3f); // Color verde transparente
+            Gizmos.DrawLine(agentTransform.position, agentTransform.position + PointForAngle(halfCurrentVisionAngle, visionDistance));
+            Gizmos.DrawLine(agentTransform.position, agentTransform.position + PointForAngle(-halfCurrentVisionAngle, visionDistance));
+            Gizmos.DrawLine(agentTransform.position + PointForAngle(halfCurrentVisionAngle, visionDistance), agentTransform.position + PointForAngle(-halfCurrentVisionAngle, visionDistance));
+        }
     }
 
     // Función para calcular un punto en el cono de visión del agente
     Vector3 PointForAngle(float angle, float distance)
     {
-        
-        Vector3 forward = agentTransform.forward; 
-        Vector3 right = agentTransform.right;     
+        Vector3 forward = agentTransform.forward;
+        Vector3 right = agentTransform.right;
         Vector3 up = agentTransform.up;
 
         // Calcula la rotación para el ángulo dado
@@ -75,4 +93,7 @@ public class AgentSenses : MonoBehaviour
 
     // Fuentes de los recursos consultados para el proyecto
     // https://youtu.be/lV47ED8h61k?si=6m012cxUMIkJvd5z
+
 }
+
+
